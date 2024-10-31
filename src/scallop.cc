@@ -34,6 +34,23 @@ scallop::scallop(const splice_graph &g, const hyper_set &h, bool r)
 	init_nonzeroset();
 }
 
+scallop::scallop(const splice_graph &g, const hyper_set &h, const hyper_set &h2, const vector<pair<int, int>> &pl, const vector<partial_exon> &pes, bool r)
+	: gr(g), hs(h), hs2(h2), plink(pl),pexons(pes), random_ordering(r)
+{
+	// bd = h2;
+	round = 0;
+	if(output_tex_files == true) gr.draw(gr.gid + "." + tostring(round++) + ".tex");
+
+	gr.get_edge_indices(i2e, e2i);
+	//add_pseudo_hyper_edges();
+	hs.build(gr, e2i);
+	init_super_edges();
+	init_vertex_map();
+	init_inner_weights();
+	init_nonzeroset();
+}
+
+
 scallop::~scallop()
 {
 }
@@ -107,13 +124,28 @@ int scallop::assemble()
 	greedy_decompose();
 
 	// TODO: now to modify each path in paths
-
+	for(int i=0; i<paths.size(); i++)
+	{
+		map<int, int> mpc;
+		int tc = compatible_phasing_paths(paths[i], mpc);
+		for(auto it : mpc) 
+		{
+			int pc = it.second; 
+			if(pc*1.0/tc > consensus_threshold) 
+			{
+				paths[i].v.push_back(it.first);
+				printf("partial exon [%d, %d) pushed to the path %d\n", pexons[it.first].lpos,pexons[it.first].rpos, i);
+			} 
+		}
+		sort(paths[i].v.begin(), paths[i].v.end());
+	}
+	
 	trsts.clear();
 	//gr.output_transcripts(trsts, paths);
 	
 	non_full_trsts.clear();
 	gr.output_transcripts1(trsts, non_full_trsts, paths);
-	//printf("in scallop.cc: trsts.size = %d, non full length trsts.size = %d\n", trsts.size(), non_full_trsts.size());
+	printf("in scallop.cc: trsts.size = %d, non full length trsts.size = %d\n", trsts.size(), non_full_trsts.size());
 
 	if(verbose >= 2) 
 	{
@@ -122,6 +154,45 @@ int scallop::assemble()
 	}
 
 	return 0;
+}
+
+int scallop::compatible_phasing_paths(path p, map<int, int> &mpc)
+{
+	int tc = 0;
+	for(auto it = hs.nodes.begin(); it != hs.nodes.end(); it++)
+	{
+		vector<int> hsv = it->first;
+		if (is_compatible(p.v, hsv))
+		{
+			tc += it->second;
+			for(auto vi : hsv)
+			{
+				if(pexons[vi].rel == false)
+				{
+					if(mpc.find(vi) == mpc.end()) mpc.insert(make_pair(vi, it->second));
+					else mpc[vi] += it->second;
+				}
+			}
+		}
+	}
+	return tc;
+}
+
+bool scallop::is_compatible(vector<int> &v, vector<int> &t)
+{
+	bool is_comp = false;
+	for(int i=0; i<v.size(); i++){
+		is_comp = true;
+		for(int j=0; j<t.size(); j++){
+			if(v[i] != t[j]) 
+			{
+				is_comp = false;
+				break;
+			}
+		}
+		if(is_comp) return true;
+	}
+	return false;
 }
 
 bool scallop::resolve_smallest_edges(double max_ratio)

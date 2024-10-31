@@ -107,6 +107,7 @@ string version = "v1.1.2";
 
 // for long-reads
 int reliability_threshold = 10;
+int consensus_threshold = 0.3;
 
 int parse_arguments(int argc, const char ** argv)
 {

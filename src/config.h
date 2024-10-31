@@ -141,6 +141,7 @@ extern string version;
 
 // for long-reads
 extern int reliability_threshold;
+extern int consensus_threshold;
 
 // parse arguments
 int print_command_line(int argc, const char ** argv);

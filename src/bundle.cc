@@ -1663,6 +1663,8 @@ int bundle::build_hyper_set()
 	// 		else m[v] += cnt;
 	// 	}
 	// }
+
+	
 	
 	// TODO: use starring from here
 	for(int k = 0; k < bb.hits.size(); k++)
@@ -1674,7 +1676,7 @@ int bundle::build_hyper_set()
 
 		vector<int> v1 = align_hit(h);
 
-		// v is the list of nodes without unrealizable ones
+		// v is the list of nodes without unreliable ones
 		vector<int> v;
 		for(int j=0; j < v1.size(); j++)
 		{
@@ -1684,12 +1686,23 @@ int bundle::build_hyper_set()
 			// otherwise add it to newv
 			if(p.rel == true) v.push_back(v1[j]);
 		}
+		if(v.size() == 0){
+			continue;
+			printf("Empty vertex set:\n");
+			for(auto vi: v1) 
+			{
+				partial_exon &p = pexons[vi];
+				printf("%d\n", p.rpos - p.lpos);
+			}
+			fflush(stdout);
 
+		}
+		assert(v.size() > 0);
 		if(mm.find(v) == mm.end())
 		{
 			map<vector<int>, int> tm;
 			tm.insert(make_pair(v1, 1));
-			mm.insert(tm);
+			mm.insert(make_pair(v,tm));
 		}
 		else
 		{
@@ -1710,14 +1723,14 @@ int bundle::build_hyper_set()
 
 	hs.clear();
 	hs2.clear();
-	for(auto & it = mm.begin(); it != mm.end(); it++)
+	for(auto it = mm.begin(); it != mm.end(); it++)
 	{
 		const vector<int> &v = it->first;
 		int cc = 0;
 		map<vector<int>, int> & tm = it->second;
 
 		int start = hs2.nodes.size();
-		for(auto &ix = tm.begin(); ix != tm.end(); ix++)
+		for(auto ix = tm.begin(); ix != tm.end(); ix++)
 		{
 			const vector<int> &v1 = ix->first;
 			int c = ix->second;
@@ -1734,6 +1747,7 @@ int bundle::build_hyper_set()
 
 	//printf("Printing the modified hyperset for Bundle %d:\n", index);
 	hs.print();
+	hs2.print();
 	return 0;
 }
 

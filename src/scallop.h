@@ -14,6 +14,7 @@ See LICENSE for licensing.
 #include "equation.h"
 #include "router.h"
 #include "path.h"
+#include "bundle.h"
 
 typedef map< edge_descriptor, vector<int> > MEV;
 typedef pair< edge_descriptor, vector<int> > PEV;
@@ -29,6 +30,7 @@ class scallop
 public:
 	scallop();
 	scallop(const splice_graph &gr, const hyper_set &hs, bool random_ordering = false);
+	scallop(const splice_graph &g, const hyper_set &hs, const hyper_set &hs2, const vector<pair<int, int>> &plink, const vector<partial_exon> &pexons, bool random_ordering = false);
 	virtual ~scallop();
 
 public:
@@ -41,7 +43,10 @@ public:
 	bool random_ordering;				// whether using random ordering
 	MEV mev;							// super edges
 	vector<int> v2v;					// vertex map
-	hyper_set hs;						// hyper edges
+	hyper_set hs;						// hyper edges w/o unreliable pexons
+	hyper_set hs2; 						// hyper edges w/ unreliable pexons
+	vector<pair<int, int>> plink;
+	vector<partial_exon> pexons;
 	int round;							// iteration
 	set<int> nonzeroset;				// vertices with degree >= 1
 	vector<path> paths;					// predicted paths
@@ -98,6 +103,10 @@ private:
 	int summarize_vertices();
 	int draw_splice_graph(const string &file);
 	vector<int> topological_sort();
+
+	// 
+	int compatible_phasing_paths(path p, map<int, int> &mpc);
+	bool is_compatible(vector<int> &v, vector<int> &t);
 };
 
 #endif

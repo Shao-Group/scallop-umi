@@ -12,6 +12,7 @@ See LICENSE for licensing.
 #include <fstream>
 #include <string>
 #include "bundle_base.h"
+#include "bundle.h"
 #include "transcript.h"
 #include "splice_graph.h"
 #include "hyper_set.h"
@@ -47,6 +48,7 @@ public:
 private:
 	int process(int n);
 	int assemble(const splice_graph &gr, const hyper_set &hs, transcript_set &ts1, transcript_set &ts2);
+	int assemble2(bundle &bd, transcript_set &ts1, transcript_set &ts2);
 	int assign_RPKM();
 	int write();
 	int compare(splice_graph &gr, const string &ref, const string &tex = "");

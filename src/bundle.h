@@ -27,6 +27,7 @@ class bundle
 {
 public:
 	bundle(bundle_base &bb);
+	bundle();
 	virtual ~bundle();
 
 public:
@@ -44,7 +45,9 @@ public:
 	splice_graph new_gr;				// splice graph
 	hyper_set hs;					// hyper set w/o unreliable vertices
 	hyper_set hs2;					// hyper set w/ unreliaable vertices
-	vector<pair<int, int>>; plink;		
+	hyper_set hs_majority;          // hyper set with majority voting
+	vector<pair<int, int>> plink;		
+
 
 public:
 	virtual int build(int mode, bool revise);
@@ -100,6 +103,7 @@ public:
 	// hyper set
 	int build_hyper_set();
 	int refine_hyper_set();
+	int build_majority_hyper_set();
 };
 
 #endif
