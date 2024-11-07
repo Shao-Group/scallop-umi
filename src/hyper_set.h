@@ -31,12 +31,14 @@ public:
 	VVI edges;			// hyper-edges using list-of-edges
 	vector<int> ecnts;	// counts for edges
 	MISI e2s;			// index: from edge to hyper-edges
+	vector<PVII> nodes2;        // list of nodes with unreliable vertices
 
 public:
 	int clear();
 	int add_node_list(const set<int> &s);
 	int add_node_list(const set<int> &s, int c);
 	int add_node_list(const vector<int> &s, int c);
+	int add_node2_list(const vector<int> &s, int c);
 	int build(directed_graph &gr, MEI &e2i);
 	int build_edges(directed_graph &gr, MEI &e2i);
 	int build_index();

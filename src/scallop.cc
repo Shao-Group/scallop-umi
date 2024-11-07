@@ -134,8 +134,12 @@ int scallop::assemble()
 			if(pc*1.0/tc > consensus_threshold) 
 			{
 				paths[i].v.push_back(it.first);
-				printf("partial exon [%d, %d) pushed to the path %d\n", pexons[it.first].lpos,pexons[it.first].rpos, i);
+				printf("partial exon %d: [%d, %d) pushed to the path %d -- %s\n", it.first,pexons[it.first-1].lpos,pexons[it.first-1].rpos, i, gr.chrm.c_str());
+				// printf("Chromosome %s\n", gr.chrm);
 			} 
+			// else{
+			// 	printf("partial exon [%d, %d) did not pass the threshold for %d\n", pexons[it.first].lpos,pexons[it.first].rpos, i);
+			// }
 		}
 		sort(paths[i].v.begin(), paths[i].v.end());
 	}
@@ -159,20 +163,30 @@ int scallop::assemble()
 int scallop::compatible_phasing_paths(path p, map<int, int> &mpc)
 {
 	int tc = 0;
-	for(auto it = hs.nodes.begin(); it != hs.nodes.end(); it++)
+	int hs_idx = 0;
+	for(auto it = hs.nodes.begin(); it != hs.nodes.end(); it++, hs_idx++)
 	{
 		vector<int> hsv = it->first;
 		if (is_compatible(p.v, hsv))
 		{
+			// printf("compatible:");
+			// p.print(0);
 			tc += it->second;
-			for(auto vi : hsv)
+			int st = plink[hs_idx].first;
+			int end = plink[hs_idx].second;
+			for(int ii = st; ii<end; ii++)
 			{
-				if(pexons[vi].rel == false)
+				for(auto vi : hs.nodes2[ii].first)
 				{
-					if(mpc.find(vi) == mpc.end()) mpc.insert(make_pair(vi, it->second));
-					else mpc[vi] += it->second;
+					assert(vi > 0);
+					if(pexons[vi-1].rel == false)
+					{
+						if(mpc.find(vi) == mpc.end()) mpc.insert(make_pair(vi, it->second));
+						else mpc[vi] += it->second;
+					}
 				}
 			}
+			
 		}
 	}
 	return tc;
@@ -183,8 +197,9 @@ bool scallop::is_compatible(vector<int> &v, vector<int> &t)
 	bool is_comp = false;
 	for(int i=0; i<v.size(); i++){
 		is_comp = true;
-		for(int j=0; j<t.size(); j++){
-			if(v[i] != t[j]) 
+		int tmp = i;
+		for(int j=0; j<t.size(); j++,tmp++){
+			if((v[tmp]) != t[j]) 
 			{
 				is_comp = false;
 				break;

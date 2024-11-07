@@ -12,6 +12,7 @@ See LICENSE for licensing.
 int hyper_set::clear()
 {
 	nodes.clear();
+	nodes2.clear();
 	edges.clear();
 	e2s.clear();
 	ecnts.clear();
@@ -38,6 +39,18 @@ int hyper_set::add_node_list(const vector<int> &s, int c)
 	else nodes[v] += c;
 	return 0;
 }
+
+
+int hyper_set::add_node2_list(const vector<int> &s, int c)
+{
+	vector<int> v = s;
+	sort(v.begin(), v.end());
+	for(int i = 0; i < v.size(); i++) v[i]++;
+	nodes2.push_back(PVII(v, c));
+	// else nodes[v] += c;
+	return 0;
+}
+
 
 int hyper_set::build(directed_graph &gr, MEI& e2i)
 {
