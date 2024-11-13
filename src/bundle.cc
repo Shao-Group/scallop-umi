@@ -1722,7 +1722,8 @@ int bundle::build_hyper_set()
 	}
 
 	hs.clear();
-	hs2.clear();
+	hs.plink.clear();
+	// hs2.clear();
 	for(auto it = mm.begin(); it != mm.end(); it++)
 	{
 		const vector<int> &v = it->first;
@@ -1741,15 +1742,15 @@ int bundle::build_hyper_set()
 		int end = hs.nodes2.size();
 
 		hs.add_node_list(v, cc);
-		plink.push_back(make_pair(start, end));
+		hs.plink.push_back(make_pair(start, end));
 	}
 	printf("------------------------------------\n");
 
 	//printf("Printing the modified hyperset for Bundle %d:\n", index);
 	hs.print();
 	printf("With unreliable vertices:\n");
-	hs2.print();
-	for(auto pl : plink)
+	// hs2.print();
+	for(auto pl : hs.plink)
 	{
 		printf("%d --> %d\n", pl.first, pl.second);
 	}

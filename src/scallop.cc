@@ -34,10 +34,11 @@ scallop::scallop(const splice_graph &g, const hyper_set &h, bool r)
 	init_nonzeroset();
 }
 
-scallop::scallop(const splice_graph &g, const hyper_set &h, const hyper_set &h2, const vector<pair<int, int>> &pl, const vector<partial_exon> &pes, bool r)
-	: gr(g), hs(h), hs2(h2), plink(pl),pexons(pes), random_ordering(r)
+scallop::scallop(const splice_graph &g, const hyper_set &h, const vector<partial_exon> &pes, bool r)
+	: gr(g), hs(h),pexons(pes), random_ordering(r)
 {
 	// bd = h2;
+	plink = hs.plink;
 	round = 0;
 	if(output_tex_files == true) gr.draw(gr.gid + "." + tostring(round++) + ".tex");
 

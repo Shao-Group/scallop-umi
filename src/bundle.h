@@ -44,9 +44,8 @@ public:
 	splice_graph gr;				// splice graph
 	splice_graph new_gr;				// splice graph
 	hyper_set hs;					// hyper set w/o unreliable vertices
-	hyper_set hs2;					// hyper set w/ unreliaable vertices
-	hyper_set hs_majority;          // hyper set with majority voting
-	vector<pair<int, int>> plink;		
+	// hyper_set hs2;					// hyper set w/ unreliaable vertices
+	// hyper_set hs_majority;          // hyper set with majority voting		
 
 
 public:

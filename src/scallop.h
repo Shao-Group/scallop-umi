@@ -30,7 +30,7 @@ class scallop
 public:
 	scallop();
 	scallop(const splice_graph &gr, const hyper_set &hs, bool random_ordering = false);
-	scallop(const splice_graph &g, const hyper_set &hs, const hyper_set &hs2, const vector<pair<int, int>> &plink, const vector<partial_exon> &pexons, bool random_ordering = false);
+	scallop(const splice_graph &g, const hyper_set &hs, const vector<partial_exon> &pexons, bool random_ordering = false);
 	virtual ~scallop();
 
 public:
@@ -44,7 +44,7 @@ public:
 	MEV mev;							// super edges
 	vector<int> v2v;					// vertex map
 	hyper_set hs;						// hyper edges w/o unreliable pexons
-	hyper_set hs2; 						// hyper edges w/ unreliable pexons
+	// hyper_set hs2; 						// hyper edges w/ unreliable pexons
 	vector<pair<int, int>> plink;
 	vector<partial_exon> pexons;
 	int round;							// iteration

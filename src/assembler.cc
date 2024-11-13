@@ -217,8 +217,8 @@ int assembler::assemble2(bundle &bd,transcript_set &ts1, transcript_set &ts2)
 {
 	splice_graph &gr = bd.new_gr;
 	hyper_set &hs = bd.hs;
-	hyper_set &hs2 = bd.hs2;
-	vector<pair<int, int>> &plink = bd.plink;		
+	// hyper_set &hs2 = bd.hs2;
+	// vector<pair<int, int>> &plink = bd.plink;		
 
 	// if(determine_regional_graph(gr) == true) continue;
 	// if(gr.num_edges() <= 0) return 0;
@@ -230,7 +230,7 @@ int assembler::assemble2(bundle &bd,transcript_set &ts1, transcript_set &ts2)
 		string gid = "gene." + tostring(index) + "." + tostring(k) + "." + tostring(r);
 		gr.gid = gid;
 		// scallop sc(gr, hs, r == 0 ? false : true);
-		scallop sc(gr,hs,hs2,plink,bd.pexons, r == 0 ? false : true);
+		scallop sc(gr,hs,bd.pexons, r == 0 ? false : true);
 		sc.assemble();
 
 		if(verbose >= 2)

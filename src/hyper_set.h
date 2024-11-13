@@ -32,7 +32,8 @@ public:
 	vector<int> ecnts;	// counts for edges
 	MISI e2s;			// index: from edge to hyper-edges
 	vector<PVII> nodes2;        // list of nodes with unreliable vertices
-
+	vector<pair<int, int>> plink;
+	
 public:
 	int clear();
 	int add_node_list(const set<int> &s);
