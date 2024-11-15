@@ -69,6 +69,8 @@ public:
 	vector<int64_t> itvm;					// matched interval
 	vector<int64_t> itvi;					// insert interval
 	vector<int64_t> itvd;					// delete interval
+	pair<int32_t, int32_t> itvc1;					// clipped interval leading <soft span, clipped pos>
+	pair<int32_t, int32_t> itvc2;					// clipped interval	tailing <clipped pos, soft span>
 
 	bool concordant;						// whether it is concordant
 	bool paired;							// whether this hit has been paired

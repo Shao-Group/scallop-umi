@@ -51,6 +51,8 @@ hit& hit::operator=(const hit &h)
 	itvm = h.itvm;
 	itvi = h.itvi;
 	itvd = h.itvd;
+	itvc1 = h.itvc1;
+	itvc2 = h.itvc2;
 
 	vlist = h.vlist;
 	paired = h.paired;
@@ -81,6 +83,8 @@ hit::hit(const hit &h)
 	itvm = h.itvm;
 	itvi = h.itvi;
 	itvd = h.itvd;
+	itvc1 = h.itvc1;
+	itvc2 = h.itvc2;
 
 	vlist = h.vlist;
 	paired = h.paired;
@@ -162,6 +166,19 @@ hit::hit(bam1_t *b, int id)
 		{
 			int32_t s = p - bam_cigar_oplen(cigar[k]);
 			itvd.push_back(pack(s, p));
+		}
+
+		if(bam_cigar_op(cigar[k]) == BAM_CSOFT_CLIP || bam_cigar_op(cigar[k]) == BAM_CHARD_CLIP)
+		{
+			assert (k == 0 || k == n_cigar - 1);
+			if (k == 0)	
+			{
+				itvc1 = {p - bam_cigar_oplen(cigar[k]), p};
+			}
+			else 
+			{
+				itvc2 = {p, p + bam_cigar_oplen(cigar[k])};
+			}
 		}
 	}
 
