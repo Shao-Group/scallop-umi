@@ -19,12 +19,17 @@ See LICENSE for licensing.
 #include "util.h"
 #include "undirected_graph.h"
 
+
+// bundle::bundle()
+// {}
+
 bundle::bundle(bundle_base &b)
 	: bb(b) //, br(b)
 {
 	// br.build();
 	prepare();
 }
+
 
 bundle::~bundle()
 {}

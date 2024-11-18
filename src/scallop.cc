@@ -34,11 +34,12 @@ scallop::scallop(const splice_graph &g, const hyper_set &h, bool r)
 	init_nonzeroset();
 }
 
-scallop::scallop(const splice_graph &g, const hyper_set &h, const vector<partial_exon> &pes, bool r)
-	: gr(g), hs(h),pexons(pes), random_ordering(r)
+scallop::scallop(const splice_graph &g, const hyper_set &h, bundle *bd_, bool r)
+	: gr(g), hs(h), bd(bd_), random_ordering(r)
 {
-	// bd = h2;
+	// bd = bd_;
 	plink = hs.plink;
+	pexons = bd->pexons;
 	round = 0;
 	if(output_tex_files == true) gr.draw(gr.gid + "." + tostring(round++) + ".tex");
 
@@ -209,6 +210,23 @@ bool scallop::is_compatible(vector<int> &v, vector<int> &t)
 		if(is_comp) return true;
 	}
 	return false;
+}
+
+int scallop::get_compatible_reads()
+{
+	for(int i=0; i<paths.size(); i++)
+	{
+		printf("Compatible reads for path %d:\n",i);
+		for(int k = 0; k < bd->bb.hits.size(); k++)
+		{
+			hit &h = bd->bb.hits[k];
+			vector<int> read_v = bd->align_hit(h);
+			if(is_compatible(paths[i].v, read_v))
+			{
+				h.print();
+			}
+		}	
+	}
 }
 
 bool scallop::resolve_smallest_edges(double max_ratio)

@@ -30,7 +30,7 @@ class scallop
 public:
 	scallop();
 	scallop(const splice_graph &gr, const hyper_set &hs, bool random_ordering = false);
-	scallop(const splice_graph &g, const hyper_set &hs, const vector<partial_exon> &pexons, bool random_ordering = false);
+	scallop(const splice_graph &g, const hyper_set &hs, bundle *bd_, bool random_ordering = false);
 	virtual ~scallop();
 
 public:
@@ -45,6 +45,7 @@ public:
 	vector<int> v2v;					// vertex map
 	hyper_set hs;						// hyper edges w/o unreliable pexons
 	// hyper_set hs2; 						// hyper edges w/ unreliable pexons
+	bundle *bd;
 	vector<pair<int, int>> plink;
 	vector<partial_exon> pexons;
 	int round;							// iteration
@@ -107,6 +108,7 @@ private:
 	// 
 	int compatible_phasing_paths(path p, map<int, int> &mpc);
 	bool is_compatible(vector<int> &v, vector<int> &t);
+	int get_compatible_reads();
 };
 
 #endif

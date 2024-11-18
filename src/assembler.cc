@@ -230,7 +230,7 @@ int assembler::assemble2(bundle &bd,transcript_set &ts1, transcript_set &ts2)
 		string gid = "gene." + tostring(index) + "." + tostring(k) + "." + tostring(r);
 		gr.gid = gid;
 		// scallop sc(gr, hs, r == 0 ? false : true);
-		scallop sc(gr,hs,bd.pexons, r == 0 ? false : true);
+		scallop sc(gr,hs,&bd, r == 0 ? false : true);
 		sc.assemble();
 
 		if(verbose >= 2)
