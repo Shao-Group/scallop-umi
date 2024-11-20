@@ -15,6 +15,7 @@ See LICENSE for licensing.
 #include "router.h"
 #include "path.h"
 #include "bundle.h"
+// #include "junction.h"
 
 typedef map< edge_descriptor, vector<int> > MEV;
 typedef pair< edge_descriptor, vector<int> > PEV;
@@ -53,7 +54,10 @@ public:
 	vector<path> paths;					// predicted paths
 	vector<transcript> trsts;			// predicted transcripts
 	vector<transcript> non_full_trsts;		// predicted non full length transcripts
-
+	// vector<int> compatible_reads;
+	vector<vector<int>> path_read_map; 
+	map<pair<int, int>, vector<int>> junction_read_map; // key: <path idx, junction_idx> ; value: list of compatible reads idx
+	// vector<vector<int>> junction_read_map; 
 private:
 	// init
 	int classify();
@@ -107,8 +111,10 @@ private:
 
 	// 
 	int compatible_phasing_paths(path p, map<int, int> &mpc);
-	bool is_compatible(vector<int> &v, vector<int> &t);
-	int get_compatible_reads();
+	bool is_compatible(vector<int> v, vector<int> t);
+	int get_compatible_reads(bool with_unreliable);
+	int get_compatible_junctions(int path_idx,vector<int> &read_v, int read_idx, bool with_unreliable);
+	int print_junction_read_map(int path_idx);
 };
 
 #endif

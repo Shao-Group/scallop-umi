@@ -23,6 +23,7 @@ scallop::scallop(const splice_graph &g, const hyper_set &h, bool r)
 	: gr(g), hs(h), random_ordering(r)
 {
 	round = 0;
+	paths.clear();
 	if(output_tex_files == true) gr.draw(gr.gid + "." + tostring(round++) + ".tex");
 
 	gr.get_edge_indices(i2e, e2i);
@@ -41,6 +42,7 @@ scallop::scallop(const splice_graph &g, const hyper_set &h, bundle *bd_, bool r)
 	plink = hs.plink;
 	pexons = bd->pexons;
 	round = 0;
+	paths.clear();
 	if(output_tex_files == true) gr.draw(gr.gid + "." + tostring(round++) + ".tex");
 
 	gr.get_edge_indices(i2e, e2i);
@@ -125,6 +127,8 @@ int scallop::assemble()
 	collect_existing_st_paths();
 	greedy_decompose();
 
+	get_compatible_reads(true);
+
 	// TODO: now to modify each path in paths
 	for(int i=0; i<paths.size(); i++)
 	{
@@ -194,7 +198,7 @@ int scallop::compatible_phasing_paths(path p, map<int, int> &mpc)
 	return tc;
 }
 
-bool scallop::is_compatible(vector<int> &v, vector<int> &t)
+bool scallop::is_compatible(const vector<int> v, const vector<int> t)
 {
 	bool is_comp = false;
 	for(int i=0; i<v.size(); i++){
@@ -212,22 +216,99 @@ bool scallop::is_compatible(vector<int> &v, vector<int> &t)
 	return false;
 }
 
-int scallop::get_compatible_reads()
+int scallop::get_compatible_reads(bool with_unreliable=true)
 {
-	for(int i=0; i<paths.size(); i++)
+	path_read_map.clear();
+	for(int i=0; i<(paths.size()); i++)
 	{
-		printf("Compatible reads for path %d:\n",i);
+		const path &p = paths[i];
+		int cmp_hit = 0;
+		vector<int> comp_read_i;
 		for(int k = 0; k < bd->bb.hits.size(); k++)
 		{
-			hit &h = bd->bb.hits[k];
-			vector<int> read_v = bd->align_hit(h);
-			if(is_compatible(paths[i].v, read_v))
+			hit &htmp = bd->bb.hits[k];
+			vector<int> read_v1 = bd->align_hit(htmp);
+			vector<int> read_v;
+			
+			for(int j = 0; j<(int)read_v1.size(); j++)
 			{
-				h.print();
+				if(with_unreliable)
+				{
+					if(pexons[read_v1[j]].rel )
+					{
+						read_v.push_back(read_v1[j]+1);
+					}
+				}
+				else
+				{
+					read_v.push_back(read_v1[j]+1);
+				}
+			}
+
+			if(is_compatible(p.v, read_v))
+			{
+				cmp_hit++;
+				if(cmp_hit == 1 ) printf("Compatible reads for path %d:\n",i);
+				htmp.print();
+				comp_read_i.push_back(k);
+				// get_compatible_junctions(i, read_v, k,true);
 			}
 		}	
+		i++;
+		assert(comp_read_i.size() == cmp_hit);
+		printf("Total compatible reads: %d\n",cmp_hit );
+		path_read_map.push_back(comp_read_i);
+		// print_junction_read_map(i-1);
 	}
+	return 0;
 }
+
+int scallop::print_junction_read_map(int path_idx)
+{
+	path p = paths[path_idx];
+	printf("Compatible reads for all junctions for Path %d:\n", path_idx);
+	for(int j = 0; j < (p.v.size()-1); j++)
+	{
+		if(junction_read_map.find(make_pair(path_idx, j)) == junction_read_map.end()) continue;
+		vector<int> &reads = junction_read_map[make_pair(path_idx, j)];
+		for(int i = 0; i< reads.size(); i++)
+		{
+			assert(reads[i] < bd->bb.hits.size());
+			hit &h = bd->bb.hits[reads[i]];
+			h.print();
+		}
+	}
+	return 0;
+}
+
+int scallop::get_compatible_junctions(int path_idx,vector<int> &read_v, int read_idx, bool with_unreliable=true)
+{	
+	path &p = paths[path_idx];
+	for(int j=0; j<(p.v.size()-1); j++)
+	{
+		for(int rj = 0; rj < (read_v.size()-1); rj++)
+		{
+			if((p.v[j] == read_v[rj]) && (p.v[j+1] == read_v[rj+1]))
+			{
+				// printf("Junction ")			
+				pair<int,int> jkey(path_idx, j);
+				
+				if(junction_read_map.find(jkey) == junction_read_map.end()) 
+				{
+					vector<int> jreads;
+					jreads.push_back(read_idx);
+					junction_read_map.insert(make_pair(jkey, jreads));
+				}
+				else{
+					vector<int> &jreads = junction_read_map[jkey];
+					jreads.push_back(read_idx);
+				}
+			}
+		}
+	}
+	return 0;
+}
+
 
 bool scallop::resolve_smallest_edges(double max_ratio)
 {
