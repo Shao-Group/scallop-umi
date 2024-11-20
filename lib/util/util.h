@@ -16,6 +16,9 @@ See LICENSE for licensing.
 #include <iostream>
 #include <cmath>
 #include <cstdlib>
+#include <random>  
+#include <algorithm> 
+
 
 using namespace std;
 
@@ -182,5 +185,13 @@ vector<K> get_keys(const map<K, V> &m)
 vector<int> get_random_permutation(int n);
 size_t string_hash(const std::string& str);
 size_t vector_hash(const vector<int32_t> &str);
+
+template<typename Itor>
+void randome_shuffle_customized(Itor begin, Itor end)
+{
+    std::random_device rd;
+    std::mt19937 g(rd());
+    std::shuffle(begin, end, g);
+}
 
 #endif

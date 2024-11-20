@@ -8,6 +8,7 @@ See LICENSE for licensing.
 
 #include "scallop.h"
 #include "config.h"
+#include "util.h"
 
 #include <cstdio>
 #include <iostream>
@@ -319,7 +320,7 @@ bool scallop::resolve_smallest_edges(double max_ratio)
 	//for(set<int>::iterator it = nonzeroset.begin(); it != nonzeroset.end(); it++)
 	//for(int i = 1; i < gr.num_vertices() - 1; i++)
 	vector<int> vv(nonzeroset.begin(), nonzeroset.end());
-	if(random_ordering) random_shuffle(vv.begin(), vv.end());
+	if(random_ordering) randome_shuffle_customized(vv.begin(), vv.end());
 
 	for(int k = 0; k < vv.size(); k++)
 	{
@@ -444,7 +445,7 @@ bool scallop::resolve_splittable_vertex(int type, int degree, double max_ratio)
 	//for(set<int>::iterator it = nonzeroset.begin(); it != nonzeroset.end(); it++)
 	//for(int i = 1; i < gr.num_vertices() - 1; i++)
 	vector<int> vv(nonzeroset.begin(), nonzeroset.end());
-	if(random_ordering) random_shuffle(vv.begin(), vv.end());
+	if(random_ordering) randome_shuffle_customized(vv.begin(), vv.end());
 
 	for(int k = 0; k < vv.size(); k++)
 	{
@@ -496,7 +497,7 @@ bool scallop::resolve_unsplittable_vertex(int type, int degree, double max_ratio
 	//for(int i = 1; i < gr.num_vertices() - 1; i++)
 	//for(set<int>::iterator it = nonzeroset.begin(); it != nonzeroset.end(); it++)
 	vector<int> vv(nonzeroset.begin(), nonzeroset.end());
-	if(random_ordering) random_shuffle(vv.begin(), vv.end());
+	if(random_ordering) randome_shuffle_customized(vv.begin(), vv.end());
 
 	for(int k = 0; k < vv.size(); k++)
 	{
@@ -645,7 +646,7 @@ bool scallop::resolve_trivial_vertex(int type, double jump_ratio)
 	//for(int i = 1; i < gr.num_vertices() - 1; i++)
 	//for(set<int>::iterator it = nonzeroset.begin(); it != nonzeroset.end(); it++)
 	vector<int> vv(nonzeroset.begin(), nonzeroset.end());
-	if(random_ordering) random_shuffle(vv.begin(), vv.end());
+	if(random_ordering) randome_shuffle_customized(vv.begin(), vv.end());
 	for(int k = 0; k < vv.size(); k++)
 	{
 		int i = vv[k];
@@ -697,7 +698,7 @@ bool scallop::resolve_trivial_vertex_fast(double jump_ratio)
 	bool flag = false;
 	//for(set<int>::iterator it = nonzeroset.begin(); it != nonzeroset.end(); it++)
 	vector<int> vv(nonzeroset.begin(), nonzeroset.end());
-	if(random_ordering) random_shuffle(vv.begin(), vv.end());
+	if(random_ordering) randome_shuffle_customized(vv.begin(), vv.end());
 	for(int k = 0; k < vv.size(); k++)
 	{
 		int i = vv[k];
