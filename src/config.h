@@ -138,10 +138,12 @@ extern int batch_bundle_size;
 extern int verbose;
 extern int assemble_duplicates; 
 extern string version;
+extern int berth_mode;
 
 // for long-reads
 extern int reliability_threshold;
 extern int consensus_threshold;
+
 
 // parse arguments
 int print_command_line(int argc, const char ** argv);

@@ -13,6 +13,7 @@ See LICENSE for licensing.
 #include <fstream>
 
 #include "bundle.h"
+#include "berth.h"
 #include "bundle_bridge.h"
 #include "region.h"
 #include "config.h"
@@ -24,9 +25,10 @@ See LICENSE for licensing.
 // {}
 
 bundle::bundle(bundle_base &b)
-	: bb(b) //, br(b)
+	: bb(b), bth(b)
 {
 	// br.build();
+	if (berth_mode >= 1) bth.build_berths();
 	prepare();
 }
 
@@ -46,6 +48,7 @@ int bundle::prepare()
 
 	build_partial_exon_map();
 	link_partial_exons();
+	// bth.refine_berths(ss); FIXME:
 	return 0;
 }
 

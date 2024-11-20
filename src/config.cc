@@ -104,6 +104,7 @@ int batch_bundle_size = 100;
 int verbose = 1;
 int assemble_duplicates = 1; // CHANGED THE VALUE TO 1
 string version = "v1.1.2";
+int berth_mode = 1;	// 0: off; 1: on; 2: berth only
 
 // for long-reads
 int reliability_threshold = 25;
@@ -440,6 +441,11 @@ int parse_arguments(int argc, const char ** argv)
 		else if(string(argv[i]) == "--insertsize_high")
 		{
 			insertsize_high = atof(argv[i + 1]);
+			i++;
+		}
+		else if(string(argv[i]) == "--berth")
+		{
+			berth_mode = atoi(argv[i + 1]);
 			i++;
 		}
 	}

@@ -20,6 +20,7 @@ See LICENSE for licensing.
 #include "path.h"
 #include "gene.h"
 #include "transcript.h"
+#include "berth.h"
 
 using namespace std;
 
@@ -32,6 +33,7 @@ public:
 
 public:
 	bundle_base &bb;				// input bundle base	
+	berth       bth;					
 
 	// TODO: we aim for comment out the br
 	// bundle_bridge br;				// contains fragments
