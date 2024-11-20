@@ -24,6 +24,7 @@ AC_ARG_WITH(zlib, AS_HELP_STRING([--with-zlib], [home directory for zlib]), ZLIB
 AC_ARG_WITH(fortran, AS_HELP_STRING([--with-fortran], [home directory for fortran]), FORTRAN_HOME=$withval, FORTRAN_HOME=)
 
 # Assign CXXFLAGS
+CXXFLAGS='-Wall -std=c++17'
 AS_IF([test "x$CLP_HOME" != "x"], [AC_SUBST([CXXFLAGS], ["-I$CLP_HOME/include/coin $CXXFLAGS"])], [])
 AS_IF([test "x$BOOST_HOME" != "x"], [AC_SUBST([CXXFLAGS], ["-I$BOOST_HOME $CXXFLAGS"])], [])
 AS_IF([test "x$HTSLIB_HOME" != "x"], [AC_SUBST([CXXFLAGS], ["-I$HTSLIB_HOME/include $CXXFLAGS"])], [])
