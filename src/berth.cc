@@ -349,6 +349,20 @@ int berth::refine_berths_by_splice_sites(vector<int>& ss)
     return 0;
 }
 
+/* Write bed format
+1. chrom - name of the chromosome or scaffold. Any valid seq_region_name can be used, and chromosome names can be given with or without the 'chr' prefix.
+2. chromStart - Start position of the feature in standard chromosomal coordinates (i.e. first base is 0).
+3. chromEnd - End position of the feature in standard chromosomal coordinates
+4. name - Name of the line in the BED file
+5. score - A score between 0 and 1000. 
+6. strand - defined as + (forward) or - (reverse) or '.'
+7. thickStart - coordinate at which to start drawing the feature as a solid rectangle
+8. thickEnd - coordinate at which to stop drawing the feature as a solid rectangle
+9. itemRgb - an RGB colour value (e.g. 0,0,255). Only used if there is a track line with the value of itemRgb set to "on" (case-insensitive).
+10. blockCount - the number of sub-elements (e.g. exons) within the feature
+11. blockSizes - List of values separated by commas corresponding to the size of the blocks (the number of values must correspond to that of the "blockCount")
+12. blockStarts - List of values separated by commas corresponding to the starting coordinates of the blocks, coordinates calculated relative to those present in the chromStart column (the number of values must correspond to that of the "blockCount")
+*/
 int berth::write_bed(string filename = "berth.bed") const
 {
     ofstream bed_file(filename, ios::app);
@@ -358,11 +372,27 @@ int berth::write_bed(string filename = "berth.bed") const
         return 0;
     }
 
-    for (const auto &berth : berths)
+    assert (berths.size() == weights.size());
+    for (int i = 0; i < berths.size(); i++)
     {
+        const auto &berth = berths[i];
+        const auto &weight = weights[i];
         int st = berth.first;
         int ed = berth.second;
-        bed_file << bb.chrm << "\t" << st << "\t" << ed << "\n";
+        string name = "berth" + to_string(i) + "_" + to_string(st) + "-" + to_string(ed) + "_w" + to_string(weight);
+        bed_file << bb.chrm << "\t";
+        bed_file << st << "\t";
+        bed_file << ed << "\t";
+        bed_file << name << "\t";       // 4. name
+        bed_file << weight << "\t";     // 5. score
+        bed_file << bb.strand << "\t";  // 6. strand
+        // bed_file << st << "\t";         // 7. thickStart
+        // bed_file << ed << "\t";         // 8. thickEnd
+        // bed_file << "0,0,255" << "\t";  // 9. itemRgb
+        // bed_file << "0" << "\t";        // 10. blockCount 
+        // bed_file << "\t";               // 11. blockSizes
+        // bed_file << "\t";               // 12. blockStarts 
+        bed_file << "\n";
     }
     bed_file.close();
     return 0;
