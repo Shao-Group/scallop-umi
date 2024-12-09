@@ -55,8 +55,10 @@ int berth::build_berths()
     }
     
     this->print();
-    write_bed("berth.bed");
-    write_bed_one_end("b_one_end.bed");
+    string berth_file = berth_folder + string("berth.bed");
+    string berth_file_one_end = berth_folder + string("b_one_end.bed");
+    write_bed(berth_file.c_str());
+    write_bed_one_end(berth_file_one_end.c_str());
     
     return 0;
 }

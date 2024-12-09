@@ -96,6 +96,7 @@ string ref_file1;
 string ref_file2;
 string output_file;
 string output_file1;
+string berth_folder;
 
 // for controling
 bool output_tex_files = false;
@@ -446,6 +447,12 @@ int parse_arguments(int argc, const char ** argv)
 		else if(string(argv[i]) == "--berth")
 		{
 			berth_mode = atoi(argv[i + 1]);
+			i++;
+		}
+
+		else if(string(argv[i]) == "--berth-folder")
+		{
+			berth_folder = string(argv[i+1]);
 			i++;
 		}
 	}

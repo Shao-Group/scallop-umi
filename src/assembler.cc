@@ -183,31 +183,31 @@ int assembler::process(int n)
 		assemble2(bd, ts1, ts2);
 		
 
-		int sdup = assemble_duplicates / 1 + 1;
-		int mdup = assemble_duplicates / 2 + 0;
+		// int sdup = assemble_duplicates / 1 + 1;
+		// int mdup = assemble_duplicates / 2 + 0;
 
-		vector<transcript> gv1 = ts1.get_transcripts(sdup, mdup);
-		vector<transcript> gv2 = ts2.get_transcripts(sdup, mdup);
+		// vector<transcript> gv1 = ts1.get_transcripts(sdup, mdup);
+		// vector<transcript> gv2 = ts2.get_transcripts(sdup, mdup);
 
-		for(int k = 0; k < gv1.size(); k++)
-		{
-			if(gv1[k].exons.size() >= 2) gv1[k].coverage /= (1.0 * assemble_duplicates);
-		}
-		for(int k = 0; k < gv2.size(); k++) 
-		{
-			if(gv2[k].exons.size() >= 2) gv2[k].coverage /= (1.0 * assemble_duplicates);
-		}
+		// for(int k = 0; k < gv1.size(); k++)
+		// {
+		// 	if(gv1[k].exons.size() >= 2) gv1[k].coverage /= (1.0 * assemble_duplicates);
+		// }
+		// for(int k = 0; k < gv2.size(); k++) 
+		// {
+		// 	if(gv2[k].exons.size() >= 2) gv2[k].coverage /= (1.0 * assemble_duplicates);
+		// }
 
-		// TODO: do not use the following filters as well
-		filter ft1(gv1);
-		// ft1.filter_length_coverage();
-		// ft1.remove_nested_transcripts();
-		if(ft1.trs.size() >= 1) trsts.insert(trsts.end(), ft1.trs.begin(), ft1.trs.end());
+		// // TODO: do not use the following filters as well
+		// filter ft1(gv1);
+		// // ft1.filter_length_coverage();
+		// // ft1.remove_nested_transcripts();
+		// if(ft1.trs.size() >= 1) trsts.insert(trsts.end(), ft1.trs.begin(), ft1.trs.end());
 
-		filter ft2(gv2);
-		// ft2.filter_length_coverage();
-		// ft2.remove_nested_transcripts();
-		if(ft2.trs.size() >= 1) non_full_trsts.insert(non_full_trsts.end(), ft2.trs.begin(), ft2.trs.end());
+		// filter ft2(gv2);
+		// // ft2.filter_length_coverage();
+		// // ft2.remove_nested_transcripts();
+		// if(ft2.trs.size() >= 1) non_full_trsts.insert(non_full_trsts.end(), ft2.trs.begin(), ft2.trs.end());
 	}
 	pool.clear();
 	return 0;
