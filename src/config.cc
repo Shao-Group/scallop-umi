@@ -104,7 +104,11 @@ int batch_bundle_size = 100;
 int verbose = 1;
 int assemble_duplicates = 1; // CHANGED THE VALUE TO 1
 string version = "v1.1.2";
+
+//for berth
 int berth_mode = 1;	// 0: off; 1: on; 2: berth only
+string anchor_start = "";
+string anchor_end = "";
 
 // for long-reads
 int reliability_threshold = 25;
@@ -446,6 +450,16 @@ int parse_arguments(int argc, const char ** argv)
 		else if(string(argv[i]) == "--berth")
 		{
 			berth_mode = atoi(argv[i + 1]);
+			i++;
+		}
+		else if(string(argv[i]) == "--anchor_start" || string(argv[i]) == "-s1")
+		{
+			anchor_start = string(argv[i + 1]);
+			i++;
+		}
+		else if(string(argv[i]) == "--anchor_end" || string(argv[i]) == "-s2")
+		{
+			anchor_end = string(argv[i + 1]);
 			i++;
 		}
 	}
