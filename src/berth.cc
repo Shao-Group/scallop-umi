@@ -28,6 +28,39 @@ const vector<PI32>& berth::get_berths() const
     return berths;
 }
 
+const vector<int>& berth::get_weights() const
+{
+    assert (status != 0);
+    assert (berths.size() == weights.size());
+    return weights;
+}
+
+/**
+ * @param side - 0: left side of berth
+ *             - 1: right side of berth
+ * @return A map of left/right side pos of berth & weights
+ */
+map<int32_t, int>  berth::get_berth_side(int side) const
+{
+    assert (side == 0 || side == 1);
+    assert (berths.size() == weights.size());
+    map<int32_t, int> side_berth;
+    for (int i = 0; i < berths.size(); i++)
+    {
+        int p = (side == 0) ? berths[i].first : berths[i].second;
+        if (side_berth.find(p) == side_berth.end())
+        {
+            side_berth[p] = weights[i];
+        }
+        else
+        {
+            side_berth[p] += weights[i];
+        }        
+    }
+    return side_berth;
+}
+
+
 int berth::refine_berths(vector<int>& ss)
 {
     assert (status != 0);

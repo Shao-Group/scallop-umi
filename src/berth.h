@@ -22,7 +22,11 @@ public:
 	bool is_empty() const;
 	int build_berths();
 	int refine_berths(vector<int>& ss);
-    const vector<PI32>& get_berths() const;	
+
+public:
+	const vector<PI32>& get_berths() const;
+	const vector<int>&  get_weights() const;
+	map<int32_t, int>   get_berth_side(int side) const;
 	int write_bed(string filename) const;
 	int write_bed_one_end(string filename) const;
 	int print(int index = 0) const;
