@@ -1,3 +1,4 @@
 noinst_LIBRARIES=libutil.a
 
-libutil_a_SOURCES = util.h util.cc
+libutil_a_SOURCES = util.h util.cc \
+					aligner.h aligner.cc
