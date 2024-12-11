@@ -142,6 +142,7 @@ extern string version;
 
 //for berth
 extern int berth_mode;
+extern int anchor_nm_threshold;
 extern string anchor_start;
 extern string anchor_end;
 
