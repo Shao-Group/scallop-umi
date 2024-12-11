@@ -17,6 +17,7 @@ See LICENSE for licensing.
 #include "hit.h"
 #include "config.h"
 #include "util.h"
+#include "aligner.h"
 
 /*
 hit::hit(int32_t p)
@@ -53,6 +54,8 @@ hit& hit::operator=(const hit &h)
 	itvd = h.itvd;
 	itvc1 = h.itvc1;
 	itvc2 = h.itvc2;
+	left_anchor_padding = h.left_anchor_padding;
+	right_anchor_padding = h.right_anchor_padding;		
 
 	vlist = h.vlist;
 	paired = h.paired;
@@ -85,6 +88,8 @@ hit::hit(const hit &h)
 	itvd = h.itvd;
 	itvc1 = h.itvc1;
 	itvc2 = h.itvc2;
+	left_anchor_padding = h.left_anchor_padding;
+	right_anchor_padding = h.right_anchor_padding;		
 
 	vlist = h.vlist;
 	paired = h.paired;
@@ -181,8 +186,114 @@ hit::hit(bam1_t *b, int id)
 			}
 		}
 	}
-
+	
+	set_anchors(b);
 	//printf("call regular constructor\n");
+}
+
+int hit::set_anchors(bam1_t *b)
+{
+	left_anchor_padding  = -1;
+	right_anchor_padding = -1;
+
+	int anchor_start_nm = anchor_nm_threshold >= 0? anchor_nm_threshold : 10;
+	int anchor_end_nm   = anchor_nm_threshold >= 0? anchor_nm_threshold : 10;
+
+	if (berth_mode == 0) return 0;
+
+	// whether SEQ in bam is reverse complemente
+	bool seqrev;
+	if((flag & 0x10) >= 1) seqrev = true;
+	if((flag & 0x10) <= 0) seqrev = false;
+	
+	// whether second in pair	// TODO: what if seq attachment to 1st strand but sequence 2nd strand
+	bool second_in_pair;
+	if((flag & 0x1) >= 1 && (flag & 0x40) <= 0 && (flag & 0x80) >= 1) second_in_pair = true;
+
+	// left clipped sequence
+	if ((anchor_start != "" && !seqrev) || (anchor_end != "" && seqrev))
+	{
+		int ql1 = itvc1.first;
+		int ql2 = itvc1.second;
+		int seqlen = ql2 - ql1 + 1;
+		assert (seqlen >= 0);	
+
+		// get left clip seq
+		string leftclipseq(seqlen, 'N');	
+		uint8_t *seq_ptr = bam_get_seq (b);
+		for (int i = 0; i < seqlen; i++)
+		{
+			leftclipseq[i - ql1] = seq_nt16_str[bam_seqi(seq_ptr, i)];
+		}
+		cout << "leftclipseq: " << leftclipseq << endl; //CLEAN:
+
+		// get left anchor position
+		int anchorpos = -1;
+		if (seqrev)	anchorpos = subseq_pos(revcomp(leftclipseq), anchor_end, anchor_end_nm);
+		else	    anchorpos = subseq_pos(leftclipseq,          anchor_start, anchor_start_nm);
+
+		left_anchor_padding = anchorpos >= 0? seqlen - anchorpos: -1;
+	}
+
+	// right clipped sequence
+	if ((anchor_end != "" && !seqrev) || (anchor_start != "" && seqrev)) 
+	{
+		int ql1 = itvc2.first;
+		int ql2 = itvc2.second;
+		int seqlen = ql2 - ql1 + 1;
+		assert (seqlen >= 0);	
+
+		// get right clip seq
+		string rightclipseq(seqlen, 'N');	
+		uint8_t *seq_ptr = bam_get_seq (b);
+		for (int i = ql1 - pos; i < ql1 - pos + seqlen; i++)
+		{	
+			rightclipseq[i - ql1 - pos] = seq_nt16_str[bam_seqi(seq_ptr, i)];
+		}
+		cout << "rightclipseq: " << rightclipseq << endl; //CLEAN:
+
+		// get right anchor position
+		int anchorpos = -1;
+		if (seqrev)	anchorpos = subseq_pos(rightclipseq, revcomp(anchor_start), anchor_start_nm);	// double rev comp //FIXME: is it right?
+		else	    anchorpos = subseq_pos(revcomp(rightclipseq), revcomp(anchor_end), anchor_end_nm);
+
+		right_anchor_padding = anchorpos >= 0? seqlen - anchorpos: -1;
+	}
+
+	return 0;
+}
+
+bool hit::is_anchor_satisfactory(int side, int padding_max = 20)
+{
+	bool seqrev;
+	if((flag & 0x10) >= 1) seqrev = true;
+	if((flag & 0x10) <= 0) seqrev = false;
+
+	assert (side == 0 || side == 1);
+
+	if (side == 0) // left
+	{
+		if ((anchor_start != "" && !seqrev) || (anchor_end != "" && seqrev))
+		{
+			if (left_anchor_padding < 0) return false; 
+			if (left_anchor_padding > padding_max) return false;
+			return true;
+		}
+		
+	}
+
+	if (side == 1) // right
+	{
+		if ((anchor_end != "" && !seqrev) || (anchor_start != "" && seqrev)) 
+		{
+			if (right_anchor_padding < 0) return false; 
+			if (right_anchor_padding > padding_max) return false;
+			return true;
+		}
+	}
+	
+	// anchor seq not provided
+	return true;
 }
 
 int hit::get_aligned_intervals(vector<int64_t> &v) const

@@ -11,7 +11,7 @@ See LICENSE for licensing.
 
 using namespace std;
 
-int subseq_pos(const string& seq1, const string& seq2, int nm);
+int subseq_pos(const string& seq1, const string& seq2, int nm, int indel_penalty, int mis_penalty);
 
 string revcomp(const string& s);
 char   revcomp_char(const char&   c);
