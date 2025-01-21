@@ -20,7 +20,7 @@ See LICENSE for licensing.
  * @return position of seq2's first subsequence that can be transformed into seq1
  * @return -1 if unfeasible (or seq1 is longer than seq2)
  */
-int subseq_pos(const std::string& seq1, const std::string& seq2, int nm, int indel_penalty = 1, int mis_penalty = 1) 
+int subseq_pos(const std::string& seq1, const std::string& seq2, int nm, int indel_penalty, int mis_penalty) 
 {
     if (seq1.length() > seq2.length())  return -1;
 
