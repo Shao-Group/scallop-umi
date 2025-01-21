@@ -47,7 +47,9 @@ public:
 	splice_graph new_gr;				// splice graph
 	hyper_set hs;					// hyper set w/o unreliable vertices
 	// hyper_set hs2;					// hyper set w/ unreliaable vertices
-	// hyper_set hs_majority;          // hyper set with majority voting		
+	// hyper_set hs_majority;          // hyper set with majority voting	
+	vector<pair<int32_t,int>> tss_list;		// TSS as (pos, cnt)
+	vector<pair<int32_t,int>> tes_list;		// TES as (pos, cnt)
 
 
 public:
@@ -83,6 +85,8 @@ public:
 	vector<int> align_hit(hit &h);
 	vector<int> align_fragment(fragment &f);
 	void print_fmap();
+	int build_tss_tes();
+	void write_tss_tes();
 
 	// revise splice graph
 	VE compute_maximal_edges();

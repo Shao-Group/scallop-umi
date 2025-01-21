@@ -64,6 +64,9 @@ int bundle::build(int mode, bool revise)
 	build_hyper_set();
 	// printf("rebuild splice graph completed ...");
 	//refine_hyper_set();
+	build_tss_tes();
+	write_tss_tes();
+	write_read_st_end();
 	return 0;
 }
 
@@ -659,6 +662,41 @@ int bundle::refine_modified_splice_graph()
 	}
 	return 0;
 }
+
+int bundle::build_tss_tes()
+{
+	printf("Printing graph from before building TSS/TES \n");
+	new_gr.print();
+	tss_list.clear();
+	tes_list.clear();
+	for(int i = 1; i < new_gr.num_vertices() - 1; i++)
+	{
+		double wv;
+		PEB p = new_gr.edge(0, i);
+		if(p.second == true)
+		{
+			wv = new_gr.get_vertex_weight(i);
+			vertex_info vtss = new_gr.get_vertex_info(i);
+			tss_list.push_back(make_pair(vtss.lpos,wv));
+			printf("TSS: %d %d\n", vtss.lpos, wv);
+		} 
+		
+		// TES
+		p = new_gr.edge(i, new_gr.num_vertices()-1);
+		if(p.second == true) 
+		{
+			wv = new_gr.get_vertex_weight(i);
+			vertex_info vtes = new_gr.get_vertex_info(i);
+			tes_list.push_back(make_pair(vtes.rpos,wv));
+			printf("TES: %d %d\n", vtes.rpos, wv);
+		}
+
+	}
+	return 0;
+}
+
+
+
 bool bundle::extend_start_boundaries()
 {
 	bool flag = false;
@@ -1891,7 +1929,8 @@ int bundle::rebuild_splice_graph_using_refined_hyper_set(int mode)
 			partial_exon &p = pexons[v[j]];
 			// if p is unreliable, skip it
 			// otherwise add it to newv
-			if(p.rel == true) newv.push_back(v[j]);
+			// if(p.rel == true) newv.push_back(v[j]);
+			newv.push_back(v[j]);
 		}
 
 		
@@ -2040,4 +2079,81 @@ void bundle::print_fmap(){
 		it++;
 	}
 
+}
+
+void bundle::write_tss_tes()
+{
+	string tss_file_name = berth_folder + string("tss_splice_graph.bed");
+	string tes_file_name = berth_folder + string("tes_splice_graph.bed");
+	
+	// cout << tss_file_name << tes_file_name << endl;
+    ofstream tss_file(tss_file_name, ios::app);
+	ofstream tes_file(tes_file_name, ios::app);
+    if (!tss_file.is_open())
+    {
+        cerr << "Error: Could not open file " << tss_file_name << " for writing." << endl;
+        return;
+    }
+
+	if (!tes_file.is_open())
+    {
+        cerr << "Error: Could not open file " << tss_file_name << " for writing." << endl;
+		return;
+    }
+
+	printf("printing tss/tes files\n");
+	printf("%d %d\n",tss_list.size(), tes_list.size());
+
+    for (int i = 0; i < tss_list.size(); i++)
+    {
+        int32_t tss = tss_list[i].first;
+        int weight = tss_list[i].second;
+        int32_t ed = tss+50;
+        string name = "tss" + to_string(i) + "_" + to_string(tss) ;
+        tss_file << bb.chrm << "\t";
+        tss_file << tss << "\t";
+        tss_file << ed << "\t";
+        tss_file << name << "\t";       // 4. name
+        tss_file << weight << "\t";     // 5. score
+        tss_file << bb.strand << "\t";  // 6. strand
+        
+        tss_file << endl;
+		tss_file << flush;
+    }
+
+	for (int i = 0; i < tes_list.size(); i++)
+    {
+        int32_t tes = tes_list[i].first;
+        int weight = tes_list[i].second;
+        int32_t ed = tes - 50;
+        string name = "tes" + to_string(i) + "_" + to_string(tes) ;
+        tes_file << bb.chrm << "\t";
+        tes_file << ed << "\t";
+		tes_file << tes << "\t";
+        tes_file << name << "\t";       // 4. name
+        tes_file << weight << "\t";     // 5. score
+        tes_file << bb.strand << "\t";  // 6. strand
+        
+        tes_file << endl;
+		tss_file << flush;
+    }
+
+    tss_file.close();
+	tes_file.close();
+    // return 0;
+
+}
+
+void bundle::write_read_st_end()
+{
+	string read_st_end_file_name = berth_folder + string("read_st_end.tsv");
+	
+	ofstream read_st_end_file(read_st_end_file_name, ios::app);
+	
+	for(int i=0; i<bb.hits.size(); i++)
+	{
+		hit &h = bb.hits[i];
+		read_st_end_file << h.pos << "\t" << h.rpos << endl;
+	}
+	read_st_end_file.close();
 }

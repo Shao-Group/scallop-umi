@@ -43,6 +43,7 @@ int assembler::assemble()
 {
     while(sam_read1(sfn, hdr, b1t) >= 0)
 	{
+		
 		if(terminate == true) return 0;
 
 		bam1_core_t &p = b1t->core;
@@ -83,6 +84,7 @@ int assembler::assemble()
 			bb2.clear();
 		}
 		
+		// printf("Starting to process...\n");
 		// process
 		process(batch_bundle_size);
 
@@ -105,25 +107,26 @@ int assembler::assemble()
 	pool.push_back(bb2);
 	process(0);
 
-	assign_RPKM();
+	// assign_RPKM();
 
-	filter ft(trsts);
-	ft.merge_single_exon_transcripts();
-	trsts = ft.trs;
+	// filter ft(trsts);
+	// ft.merge_single_exon_transcripts();
+	// trsts = ft.trs;
 
-	filter ft1(non_full_trsts);
-	ft1.merge_single_exon_transcripts();
-	non_full_trsts = ft1.trs;
+	// filter ft1(non_full_trsts);
+	// ft1.merge_single_exon_transcripts();
+	// non_full_trsts = ft1.trs;
 
-	write();
+	// write();
 	
 	return 0;
 }
 
 int assembler::process(int n)
 {
+	// printf("Trying to access pool \n");
 	if(pool.size() < n) return 0;
-
+	// printf("1 %d", &pool);
 	for(int i = 0; i < pool.size(); i++)
 	{
 		bundle_base &bb = pool[i];
@@ -138,7 +141,7 @@ int assembler::process(int n)
 		if(bb.hits.size() < min_num_hits_in_bundle && splices < min_num_splices_in_bundle) continue;
 		//printf("bundle %d has %lu reads, %d reads have splices\n", i, bb.hits.size(), splices);
 		*/
-
+		// printf("1");
 		int cnt1 = 0;
 		int cnt2 = 0;
 		for(int k = 0; k < bb.hits.size(); k++)
@@ -156,7 +159,7 @@ int assembler::process(int n)
 		char buf[1024];
 		strcpy(buf, hdr->target_name[bb.tid]);
 		bb.chrm = string(buf);
-
+		// printf("2");
 		transcript_set ts1(bb.chrm, 0.9);		// full-length set
 		transcript_set ts2(bb.chrm, 0.9);		// non-full-length set
 
@@ -169,18 +172,19 @@ int assembler::process(int n)
 		// bd.build(2, true);
 		// bd.print(index++);
 		// assemble(bd.gr, bd.hs, ts1, ts2);
-
+		// printf("Building bundle ... ...\n");
 		bd.build(1, false);
+		// printf("Building bundle finished ... ...\n");
 		bd.print(index++);
 		// assemble(bd.gr, bd.hs, ts1, ts2);
 		//assemble(bd.new_gr, bd.hs, ts1, ts2);
-		assemble2(bd, ts1, ts2);
+		// assemble2(bd, ts1, ts2);
 
-		bd.build(2, false);
-		bd.print(index++);
+		// bd.build(2, false);
+		// bd.print(index++);
 		// assemble(bd.gr, bd.hs, ts1, ts2);
 		//assemble(bd.new_gr, bd.hs, ts1, ts2);
-		assemble2(bd, ts1, ts2);
+		// assemble2(bd, ts1, ts2);
 		
 
 		// int sdup = assemble_duplicates / 1 + 1;
