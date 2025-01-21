@@ -49,7 +49,7 @@ int subseq_pos(const std::string& seq1, const std::string& seq2, int nm, int ind
         }
         
         // Check if we found a match within allowed edit distance
-        if (mx[seq1.length()][j] <= nm) return j;
+        if (mx[seq1.length()][j] <= nm) return j; //FIXME: return highest score position
     }
 
     return -1;

@@ -69,8 +69,10 @@ public:
 	vector<int64_t> itvm;					// matched interval
 	vector<int64_t> itvi;					// insert interval
 	vector<int64_t> itvd;					// delete interval
-	pair<int32_t, int32_t> itvc1;					// clipped interval leading <soft span, clipped pos>
-	pair<int32_t, int32_t> itvc2;					// clipped interval	tailing <clipped pos, soft span>
+	pair<int32_t, int32_t> itvc1;			// clipped interval leading <soft span, clipped pos>
+	pair<int32_t, int32_t> itvc2;			// clipped interval	tailing <clipped pos, soft span>
+	int32_t	left_anchor_padding;					// left anchor position		(start/end anchor which ever on left side)
+	int32_t	right_anchor_padding;					// right anchor position	(start/end anchor which ever on right side)
 
 	bool concordant;						// whether it is concordant
 	bool paired;							// whether this hit has been paired
@@ -92,6 +94,8 @@ public:
 	int set_tags(bam1_t *b);
 	int set_strand();
 	int set_concordance();
+	int set_anchors(bam1_t *b);
+	bool is_anchor_satisfactory(int side, int padding_max); //side: 0 - left, 1 - right
 	int get_aligned_intervals(vector<int64_t> &v) const;
 	int print() const;
 };

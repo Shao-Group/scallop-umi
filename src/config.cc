@@ -108,6 +108,7 @@ string version = "v1.1.2";
 
 //for berth
 int berth_mode = 1;	// 0: off; 1: on; 2: berth only
+int anchor_nm_threshold = -1;
 string anchor_start = "";
 string anchor_end = "";
 
@@ -466,6 +467,11 @@ int parse_arguments(int argc, const char ** argv)
 		else if(string(argv[i]) == "--anchor_end" || string(argv[i]) == "-s2")
 		{
 			anchor_end = string(argv[i + 1]);
+			i++;
+		}
+		else if(string(argv[i]) == "--anchor_nm_threshold")
+		{
+			anchor_nm_threshold = atoi(argv[i + 1]);
 			i++;
 		}
 	}
