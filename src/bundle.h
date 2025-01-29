@@ -24,6 +24,26 @@ See LICENSE for licensing.
 
 using namespace std;
 
+class tss_tes
+{
+public:
+	tss_tes(int type);
+	tss_tes(int type, int32_t pos, int weight_berth, int weight_sg);
+	void calculate_junction_cnt(vector<junction> &sorted_junctions_start, vector<junction> &sorted_junctions_end);
+	void calculate_clip_length(vector<hit> &hits);
+public:
+	int type; // 0: TSS, 1: TES
+	int32_t pos; // position
+	int weight_berth; // weight from berth
+	int weight_sg; // weight from splice graph
+	int read_density; // count of read starting/ending in the neighborhood
+	float leading_clip_length; // average leading soft clip length of reads starting/ending in the neighborhood
+	float trailing_clip_length; // average trailing soft clip length of reads starting/ending in the neighborhood
+	int junction_start_cnt; // count of junction starting in the neighborhood
+	int junction_end_cnt; // count of junction ending in the neighborhood
+	int junction_cross_cnt; // count of junction crossing the neighborhood
+};
+
 class bundle
 {
 public:
@@ -48,9 +68,10 @@ public:
 	hyper_set hs;					// hyper set w/o unreliable vertices
 	// hyper_set hs2;					// hyper set w/ unreliaable vertices
 	// hyper_set hs_majority;          // hyper set with majority voting	
-	vector<pair<int32_t,int>> tss_list;		// TSS as (pos, cnt)
-	vector<pair<int32_t,int>> tes_list;		// TES as (pos, cnt)
-
+	vector<pair<int32_t,int>> tss_list_sg;		// TSS as (pos, cnt)
+	vector<pair<int32_t,int>> tes_list_sg;		// TES as (pos, cnt)
+	vector<tss_tes> tss_merged;		// merged TSS
+	vector<tss_tes> tes_merged;		// merged TES
 
 public:
 	virtual int build(int mode, bool revise);
@@ -87,6 +108,8 @@ public:
 	void print_fmap();
 	int build_tss_tes();
 	void write_tss_tes();
+	void write_tss_tes_features();
+	int merge_tss_tes();
 
 	// revise splice graph
 	VE compute_maximal_edges();
@@ -110,5 +133,7 @@ public:
 	int refine_hyper_set();
 	int build_majority_hyper_set();
 };
+
+
 
 #endif

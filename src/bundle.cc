@@ -65,8 +65,9 @@ int bundle::build(int mode, bool revise)
 	// printf("rebuild splice graph completed ...");
 	//refine_hyper_set();
 	build_tss_tes();
-	write_tss_tes();
-	write_read_st_end();
+	// write_tss_tes();
+	merge_tss_tes();
+	write_tss_tes_features();
 	return 0;
 }
 
@@ -667,8 +668,8 @@ int bundle::build_tss_tes()
 {
 	printf("Printing graph from before building TSS/TES \n");
 	new_gr.print();
-	tss_list.clear();
-	tes_list.clear();
+	tss_list_sg.clear();
+	tes_list_sg.clear();
 	for(int i = 1; i < new_gr.num_vertices() - 1; i++)
 	{
 		double wv;
@@ -677,7 +678,7 @@ int bundle::build_tss_tes()
 		{
 			wv = new_gr.get_vertex_weight(i);
 			vertex_info vtss = new_gr.get_vertex_info(i);
-			tss_list.push_back(make_pair(vtss.lpos,wv));
+			tss_list_sg.push_back(make_pair(vtss.lpos,wv));
 			printf("TSS: %d %d\n", vtss.lpos, wv);
 		} 
 		
@@ -687,7 +688,7 @@ int bundle::build_tss_tes()
 		{
 			wv = new_gr.get_vertex_weight(i);
 			vertex_info vtes = new_gr.get_vertex_info(i);
-			tes_list.push_back(make_pair(vtes.rpos,wv));
+			tes_list_sg.push_back(make_pair(vtes.rpos,wv));
 			printf("TES: %d %d\n", vtes.rpos, wv);
 		}
 
@@ -2102,12 +2103,12 @@ void bundle::write_tss_tes()
     }
 
 	printf("printing tss/tes files\n");
-	printf("%d %d\n",tss_list.size(), tes_list.size());
+	printf("%d %d\n",tss_list_sg.size(), tes_list_sg.size());
 
-    for (int i = 0; i < tss_list.size(); i++)
+    for (int i = 0; i < tss_list_sg.size(); i++)
     {
-        int32_t tss = tss_list[i].first;
-        int weight = tss_list[i].second;
+        int32_t tss = tss_list_sg[i].first;
+        int weight = tss_list_sg[i].second;
         int32_t ed = tss+50;
         string name = "tss" + to_string(i) + "_" + to_string(tss) ;
         tss_file << bb.chrm << "\t";
@@ -2121,10 +2122,10 @@ void bundle::write_tss_tes()
 		tss_file << flush;
     }
 
-	for (int i = 0; i < tes_list.size(); i++)
+	for (int i = 0; i < tes_list_sg.size(); i++)
     {
-        int32_t tes = tes_list[i].first;
-        int weight = tes_list[i].second;
+        int32_t tes = tes_list_sg[i].first;
+        int weight = tes_list_sg[i].second;
         int32_t ed = tes - 50;
         string name = "tes" + to_string(i) + "_" + to_string(tes) ;
         tes_file << bb.chrm << "\t";
@@ -2144,16 +2145,210 @@ void bundle::write_tss_tes()
 
 }
 
-void bundle::write_read_st_end()
+
+int bundle::merge_tss_tes()
 {
-	string read_st_end_file_name = berth_folder + string("read_st_end.tsv");
-	
-	ofstream read_st_end_file(read_st_end_file_name, ios::app);
-	
-	for(int i=0; i<bb.hits.size(); i++)
+	// Initialize 
+	map<int32_t, int> tss_merged_map; // merged tss map to keep track of tss
+	map<int32_t, int> tes_merged_map; // merged tes map to keep track of tes
+	tss_merged.clear();
+	tes_merged.clear();
+
+	//sort all the hits based on start position
+	vector<hit> sorted_hits_tss = bb.hits;
+	sort(sorted_hits_tss.begin(), sorted_hits_tss.end(), [](const hit &a, const hit &b) -> bool { return a.pos < b.pos; });
+	//sort all the hits based on end position
+	vector<hit> sorted_hits_tes = bb.hits;
+	sort(sorted_hits_tes.begin(), sorted_hits_tes.end(), [](const hit &a, const hit &b) -> bool { return a.rpos < b.rpos; });
+
+	//sort all the junctions based on start and end position
+	vector<junction> sorted_junctions_start = junctions;
+	sort(sorted_junctions_start.begin(), sorted_junctions_start.end(), [](const junction &a, const junction &b) -> bool { return a.lpos < b.lpos; });
+	vector<junction> sorted_junctions_end = junctions;
+	sort(sorted_junctions_end.begin(), sorted_junctions_end.end(), [](const junction &a, const junction &b) -> bool { return a.rpos < b.rpos; });
+	//-------------------------------------------------------------------------------------------------------------------
+
+
+	map<int32_t, int>  tss_berth = bth.get_berth_side(0);
+	int tss_sg_size = tss_list_sg.size();
+	for (const auto &kv : tss_berth)
 	{
-		hit &h = bb.hits[i];
-		read_st_end_file << h.pos << "\t" << h.rpos << endl;
+		tss_list_sg.push_back(make_pair(kv.first, kv.second));
 	}
-	read_st_end_file.close();
+
+	for(int i=0; i<tss_list_sg.size(); i++)
+	{
+		int32_t tss_sg = tss_list_sg[i].first;
+		int weight_sg = tss_list_sg[i].second;
+		if(tss_merged_map.find(tss_sg) != tss_merged_map.end()) continue;
+		
+		tss_tes new_tss(0, tss_sg, weight_sg, 0);
+		if(tss_berth.find(tss_sg) != tss_berth.end())
+		{
+			new_tss.weight_berth = tss_berth[tss_sg];
+		}
+		if(i >= tss_sg_size)
+		{
+			new_tss.weight_sg = 0;
+		}
+
+		auto sorted_hits_tss_low = lower_bound(sorted_hits_tss.begin(), sorted_hits_tss.end(), tss_sg-berth_neighborhood, [](const hit &a, const int32_t &b) -> bool { return a.pos < b; });
+		auto sorted_hits_tss_high = upper_bound(sorted_hits_tss.begin(), sorted_hits_tss.end(), tss_sg+berth_neighborhood, [](const int32_t &a, const hit &b) -> bool { return a < b.pos; });
+		vector<hit> sorted_hits_compatible(sorted_hits_tss_low, sorted_hits_tss_high);
+		new_tss.read_density = sorted_hits_compatible.size();
+		
+		new_tss.calculate_clip_length(sorted_hits_compatible);
+		new_tss.calculate_junction_cnt(sorted_junctions_start, sorted_junctions_end);
+		tss_merged.push_back(new_tss);
+		tss_merged_map[tss_sg] = tss_merged.size()-1;
+	}
+	cout << "Bundle:" << bb.lpos << " - " << bb.rpos << " ---- " << tss_merged.size() << " - " << tss_berth.size() << " - " << tss_list_sg.size() - tss_berth.size() << endl;
+	map<int32_t, int>  tes_berth = bth.get_berth_side(1);
+
+	int tes_sg_size = tes_list_sg.size();
+	for (const auto &kv : tes_berth)
+	{
+		tes_list_sg.push_back(make_pair(kv.first, kv.second));
+	}
+
+	for(int i=0; i<tes_list_sg.size(); i++)
+	{
+		int32_t tes_sg = tes_list_sg[i].first;
+		int weight_sg = tes_list_sg[i].second;
+		if(tes_merged_map.find(tes_sg) != tes_merged_map.end()) continue;
+		
+		tss_tes new_tes(1, tes_sg, weight_sg, 0);
+		if(tes_berth.find(tes_sg) != tes_berth.end())
+		{
+			new_tes.weight_berth = tes_berth[tes_sg];
+		}
+		if(i >= tes_sg_size)
+		{
+			new_tes.weight_sg = 0;
+		}
+
+		auto sorted_hits_tes_low = lower_bound(sorted_hits_tes.begin(), sorted_hits_tes.end(), tes_sg-berth_neighborhood, [](const hit &a, const int32_t &b) -> bool { return a.rpos < b; });
+		auto sorted_hits_tes_high = upper_bound(sorted_hits_tes.begin(), sorted_hits_tes.end(), tes_sg+berth_neighborhood, [](const int32_t &a, const hit &b) -> bool { return a < b.rpos; });
+		vector<hit> sorted_hits_compatible(sorted_hits_tes_low, sorted_hits_tes_high);
+		new_tes.read_density = sorted_hits_compatible.size();
+		
+		new_tes.calculate_clip_length(sorted_hits_compatible);
+		new_tes.calculate_junction_cnt(sorted_junctions_start, sorted_junctions_end);
+		tes_merged.push_back(new_tes);
+		tes_merged_map[tes_sg] = tes_merged.size()-1;
+	}
+	cout << "Bundle:" << bb.lpos << " - " << bb.rpos << " ---- " << tes_merged.size() << " - " << tes_berth.size() << " - " << tes_list_sg.size() - tes_berth.size() << endl;
+	return 0;
+}
+
+void bundle::write_tss_tes_features()
+{
+	string tss_fname = berth_folder + string("tss_merged_features.tsv");
+	ofstream tss_file(tss_fname, ios::app);
+
+	for(int i=0; i<tss_merged.size(); i++)
+	{
+		tss_tes &tss = tss_merged[i];
+		assert(tss.type == 0);
+		tss_file << bb.chrm << "\t";
+		tss_file << bb.strand << "\t";
+		tss_file << tss.pos << "\t";
+		tss_file << tss.weight_sg << "\t";
+		tss_file << tss.weight_berth << "\t";
+		tss_file << tss.read_density << "\t";
+		tss_file << tss.leading_clip_length << "\t";
+		tss_file << tss.trailing_clip_length << "\t";
+		tss_file << tss.junction_start_cnt << "\t";
+		tss_file << tss.junction_end_cnt << "\t";
+		tss_file << tss.junction_cross_cnt << "\t";
+		tss_file <<  "\n";
+		
+	}
+	tss_file.close();
+
+	string tes_fname = berth_folder + string("tes_merged_features.tsv");
+	ofstream tes_file(tes_fname, ios::app);
+	for(int i=0; i<tes_merged.size(); i++)
+	{
+		tss_tes &tes = tes_merged[i];
+		assert (tes.type == 1);
+		tes_file << bb.chrm << "\t";
+		tes_file << bb.strand << "\t";
+		tes_file << tes.pos << "\t";
+		tes_file << tes.weight_sg << "\t";
+		tes_file << tes.weight_berth << "\t";
+		tes_file << tes.read_density << "\t";
+		tes_file << tes.leading_clip_length << "\t";
+		tes_file << tes.trailing_clip_length << "\t";
+		tes_file << tes.junction_start_cnt << "\t";
+		tes_file << tes.junction_start_cnt << "\t";
+		tes_file << tes.junction_cross_cnt << "\t";
+		tes_file <<  "\n";		
+	}
+	tes_file.close();
+}
+
+
+
+// TODO: separate this class functions to a different file
+tss_tes::tss_tes(int type = 0)
+{
+	this->type = type;
+}
+
+// TODO: separate this class functions to a different file
+tss_tes::tss_tes(int type, int32_t pos, int weight_sg, int weight_berth)
+{
+	this->type = type;
+	this->pos = pos;
+	this->weight_sg = weight_sg;
+	this->weight_berth = weight_berth;
+}
+
+//TODO: separate this class functions to a different file
+void tss_tes::calculate_clip_length(vector<hit> &sorted_hits_compatible)
+{
+	float avg_leading_clip_length = 0, avg_trailing_clip_length = 0;
+	for(int i=0; i<sorted_hits_compatible.size(); i++)
+	{
+		hit &h = sorted_hits_compatible[i];
+		avg_leading_clip_length += abs(h.itvc1.second - h.itvc1.first);
+		avg_trailing_clip_length += abs(h.itvc2.second - h.itvc2.first);
+	}
+	this->leading_clip_length = avg_leading_clip_length/sorted_hits_compatible.size();
+	this->trailing_clip_length = avg_trailing_clip_length/sorted_hits_compatible.size();
+}
+
+// TODO: separate this class functions to a different file
+void tss_tes::calculate_junction_cnt(vector<junction> &sorted_junctions_start, vector<junction> &sorted_junctions_end)
+{
+	
+	auto junction_start_low = lower_bound(sorted_junctions_start.begin(), sorted_junctions_start.end(), this->pos - berth_neighborhood, [](const junction &a, const int32_t &b) -> bool { return a.lpos < b; });
+	auto junction_start_high = upper_bound(sorted_junctions_start.begin(), sorted_junctions_start.end(), this->pos + berth_neighborhood, [](const int32_t &a, const junction &b) -> bool { return a < b.lpos; });
+	this->junction_start_cnt = std::distance(junction_start_low, junction_start_high);
+	
+	auto junction_end_low = lower_bound(sorted_junctions_end.begin(), sorted_junctions_end.end(), this->pos - berth_neighborhood, [](const junction &a, const int32_t &b) -> bool { return a.rpos < b; });
+	auto junction_end_high = upper_bound(sorted_junctions_end.begin(), sorted_junctions_end.end(), this->pos + berth_neighborhood, [](const int32_t &a, const junction &b) -> bool { return a < b.rpos; });
+	this->junction_end_cnt = std::distance(junction_end_low, junction_end_high);
+
+	// Count junctions that start before the neighborhood and end after it
+	this->junction_cross_cnt = 0;
+	for(int i=0; i<sorted_junctions_start.size(); i++)
+	{
+		junction &j = sorted_junctions_start[i];
+		if(j.lpos >= this->pos - berth_neighborhood)
+		{
+			break;
+		}
+
+		if(j.rpos <= this->pos + berth_neighborhood)
+		{
+			continue;
+		}
+		
+		if(j.lpos < this->pos - berth_neighborhood && j.rpos > this->pos + berth_neighborhood)
+		{
+			this->junction_cross_cnt++;
+		}
+	}
 }

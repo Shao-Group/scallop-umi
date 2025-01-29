@@ -21,18 +21,18 @@ using namespace std;
 
 int init_files()
 {
-	string tss_file_name = berth_folder + string("tss_splice_graph.bed");
-	string tes_file_name = berth_folder + string("tes_splice_graph.bed");
-	string read_st_end_file_name = berth_folder + string("read_st_end.tsv");
+	string tss_file_name = berth_folder + string("tss_merged_features.tsv");
+	string tes_file_name = berth_folder + string("tes_merged_features.tsv");
+	// string read_st_end_file_name = berth_folder + string("read_st_end.tsv");
 	
 	// cout << tss_file_name << tes_file_name << endl;
     ofstream tss_file(tss_file_name);
 	ofstream tes_file(tes_file_name);
-	ofstream read_st_end_file(read_st_end_file_name);
+	// ofstream read_st_end_file(read_st_end_file_name);
 
 	tss_file.close();
 	tes_file.close();
-	read_st_end_file.close();
+	// read_st_end_file.close();
 	return 0;
 }
 

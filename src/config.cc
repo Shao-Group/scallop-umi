@@ -111,6 +111,7 @@ int berth_mode = 1;	// 0: off; 1: on; 2: berth only
 int anchor_nm_threshold = -1;
 string anchor_start = "";
 string anchor_end = "";
+int berth_neighborhood = 50;
 
 // for long-reads
 int reliability_threshold = 25;
