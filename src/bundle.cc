@@ -2312,11 +2312,12 @@ void tss_tes::calculate_clip_length(vector<hit> &sorted_hits_compatible)
 	for(int i=0; i<sorted_hits_compatible.size(); i++)
 	{
 		hit &h = sorted_hits_compatible[i];
-		avg_leading_clip_length += abs(h.itvc1.second - h.itvc1.first);
-		avg_trailing_clip_length += abs(h.itvc2.second - h.itvc2.first);
+		avg_leading_clip_length += abs(h.itvc1.second - h.itvc1.first) / sorted_hits_compatible.size();
+		avg_trailing_clip_length += abs(h.itvc2.second - h.itvc2.first) / sorted_hits_compatible.size();
 	}
-	this->leading_clip_length = avg_leading_clip_length/sorted_hits_compatible.size();
-	this->trailing_clip_length = avg_trailing_clip_length/sorted_hits_compatible.size();
+	
+	this->leading_clip_length = avg_leading_clip_length;
+	this->trailing_clip_length = avg_trailing_clip_length;
 }
 
 // TODO: separate this class functions to a different file

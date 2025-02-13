@@ -47,7 +47,18 @@ map<int32_t, int>  berth::get_berth_side(int side) const
     map<int32_t, int> side_berth;
     for (int i = 0; i < berths.size(); i++)
     {
-        int p = (side == 0) ? berths[i].first : berths[i].second;
+
+        int p;
+        if (bb.strand == '+')
+        {
+            p = (side == 0) ? berths[i].first : berths[i].second;
+        }
+        else
+        {   
+            assert(bb.strand == '-');
+            p = (side == 0) ? berths[i].second : berths[i].first;
+        }
+    
         if (side_berth.find(p) == side_berth.end())
         {
             side_berth[p] = weights[i];
